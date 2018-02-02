@@ -19,6 +19,10 @@ bot.on('message', async message => {
 	const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
 	const command = args.shift().toLowerCase();
 	
+	if (!voiceChannel) {
+		voiceChannel = message.member.voiceChannel;
+	}
+	
 	try {
 		if (command == 'join') {
 			voiceConnection = await joinChannel(message)
@@ -26,16 +30,19 @@ bot.on('message', async message => {
 		}
 		
 		if (command == 'leave') {
-			if (!voiceChannel) return;
 			voiceChannel.leave();
 		}
 		
 		if (command == 'say') {
 			const sayMessage = args.join(' ');
-			message.delete().catch(console.error);
-			message.channel.send(sayMessage);
-			// TODO: make text to speech say this message
+			const url = await tts(sayMessage, 'en', 1);
+			
+			voiceConnection = await joinChannel(message)
+			if (!voiceConnection) return;
+			voiceConnection.playArbitraryInput(url);
 		}
+		
+		message.delete().catch(console.error);
 	} catch (err) {
 		console.log(err);
 	}
