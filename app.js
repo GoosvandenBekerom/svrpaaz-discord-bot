@@ -75,16 +75,14 @@ function leaveChannel () {
 }
 
 async function playTextToSpeech(message, sayMessage, language = 'nl') {
+	let originalMessage = sayMessage;
 	if (sayMessage.length > 200) {
 		sayMessage = 'Vuile paas denk je dat ik zo\'n lange tekst ga voorlezen...';
 	}
 
 	const url = await tts(sayMessage, language, 1);
 	
-	// this line is to fix a prenounciation error
-	sayMessage = 'Vuile paaz denk je dat ik zo\'n lange tekst ga voorlezen...';
-
-	message.channel.send(sayMessage);
+	message.channel.send(originalMessage);
 	await playSoundFromUrl(message, url);
 }
 
@@ -104,7 +102,7 @@ async function playInstant(message, query) {
 async function playSoundFromUrl(message, url) {
 	voiceConnection = await joinChannel(message);
 	if (!voiceConnection) return;
-	
+
 	const dispatcher = voiceConnection.playArbitraryInput(url);
 	dispatcher.on('end', end => {
 		leaveChannel();
