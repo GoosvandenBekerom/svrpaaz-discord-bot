@@ -38,11 +38,11 @@ bot.on('message', async message => {
 				await playTextToSpeech(message, args.join(' '));
 				break;
 			}
-			case 'english': {
+			case 'eng': {
 				await playTextToSpeech(message, args.join(' '), 'en');
 				break;
 			}
-			case 'instant': {
+			case 'ins': {
 				if (args.length > 0) {
 					await playInstant(message, args.join(' '));
 				} else {
@@ -77,10 +77,10 @@ function leaveChannel () {
 async function playTextToSpeech(message, sayMessage, language = 'nl') {
 	let originalMessage = sayMessage;
 	if (sayMessage.length > 200) {
-		sayMessage = 'Vuile paas denk je dat ik zo\'n lange tekst ga voorlezen...';
+		sayMessage = 'Vuile paaz denk je dat ik zo\'n lange tekst ga voorlezen...';
 	}
 
-	const url = await tts(sayMessage, language, 1);
+	const url = await tts(sayMessage.replace('paaz', 'paas'), language, 1);
 	
 	message.channel.send(originalMessage);
 	await playSoundFromUrl(message, url);
