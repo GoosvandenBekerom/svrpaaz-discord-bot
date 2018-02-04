@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const config = require('./config/bot.js');
-const fs = require('fs');
 const tts = require('google-tts-api');
+const instants = require('./myinstants-api.js');
 
 const bot = new Discord.Client();
 let voiceChannel = null;
@@ -24,27 +24,33 @@ bot.on('message', async message => {
 	}
 	
 	try {
-		if (command == 'join') {
-			voiceConnection = await joinChannel(message)
-			console.log('Succesfully joined channel: ' + voiceChannel);
+		switch(command) {
+			case 'join': {
+				voiceConnection = await joinChannel(message);
+				break;
+			}
+			case 'leave': {
+				leaveChannel();
+				break;
+			}
+			case 'say': {
+				await playTextToSpeech(message, args.join(' '));
+				break;
+			}
+			case 'instant': {
+				if (args.length > 0) {
+					await playInstant(message, args.join(' '));
+				} else {
+					await playInstant(message);
+				}
+				break;
+			}
+			default: break;
 		}
-		
-		if (command == 'leave') {
-			voiceChannel.leave();
-		}
-		
-		if (command == 'say') {
-			const sayMessage = args.join(' ');
-			const url = await tts(sayMessage, 'en', 1);
-			
-			voiceConnection = await joinChannel(message)
-			if (!voiceConnection) return;
-			voiceConnection.playArbitraryInput(url);
-		}
-		
+
 		message.delete().catch(console.error);
 	} catch (err) {
-		console.log(err);
+		console.error(err);
 	}
 });
 
@@ -55,4 +61,29 @@ function joinChannel(message) {
 	if (!voiceChannel) return;
 	
 	return voiceChannel.join();
+}
+
+function leaveChannel () {
+	voiceChannel.leave();
+}
+
+async function playTextToSpeech(message, sayMessage) {
+	const url = await tts(sayMessage, 'en', 1);
+	
+	voiceConnection = await joinChannel(message);
+	if (!voiceConnection) return;
+	voiceConnection.playArbitraryInput(url);
+}
+
+async function playInstant(message, query) {
+	const allInstants = query ? await instants(query) : await instants();
+
+	if (allInstants.length <= 0) return message.channel.send('No matching instants found');
+
+	const randomInstant = allInstants[Math.floor(Math.random()*allInstants.length)];
+	message.channel.send('Playing instant: ' + randomInstant.title);
+
+	voiceConnection = await joinChannel(message);
+	if (!voiceConnection) return;
+	voiceConnection.playArbitraryInput(randomInstant.url);
 }
