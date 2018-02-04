@@ -7,6 +7,7 @@ const bot = new Discord.Client();
 let voiceChannel = null;
 let voiceConnection = null;
 
+// Configure bot
 bot.on('ready', () => {
 	console.log('Bot is running...');
 	bot.user.setActivity('K is een Paaz');
@@ -37,6 +38,10 @@ bot.on('message', async message => {
 				await playTextToSpeech(message, args.join(' '));
 				break;
 			}
+			case 'english': {
+				await playTextToSpeech(message, args.join(' '), 'en');
+				break;
+			}
 			case 'instant': {
 				if (args.length > 0) {
 					await playInstant(message, args.join(' '));
@@ -54,8 +59,10 @@ bot.on('message', async message => {
 	}
 });
 
+// Start bot
 bot.login(config.token);
 
+// Command functions
 function joinChannel(message) {
 	voiceChannel = message.member.voiceChannel;
 	if (!voiceChannel) return;
@@ -67,23 +74,39 @@ function leaveChannel () {
 	voiceChannel.leave();
 }
 
-async function playTextToSpeech(message, sayMessage) {
-	const url = await tts(sayMessage, 'en', 1);
+async function playTextToSpeech(message, sayMessage, language = 'nl') {
+	if (sayMessage.length > 200) {
+		sayMessage = 'Vuile paas denk je dat ik zo\'n lange tekst ga voorlezen...';
+	}
+
+	const url = await tts(sayMessage, language, 1);
 	
-	voiceConnection = await joinChannel(message);
-	if (!voiceConnection) return;
-	voiceConnection.playArbitraryInput(url);
+	// this line is to fix a prenounciation error
+	sayMessage = 'Vuile paaz denk je dat ik zo\'n lange tekst ga voorlezen...';
+
+	message.channel.send(sayMessage);
+	await playSoundFromUrl(message, url);
 }
 
 async function playInstant(message, query) {
 	const allInstants = query ? await instants(query) : await instants();
 
-	if (allInstants.length <= 0) return message.channel.send('No matching instants found');
+	if (allInstants.length <= 0) {
+		return message.channel.send('No matching instants found');
+	}
 
 	const randomInstant = allInstants[Math.floor(Math.random()*allInstants.length)];
 	message.channel.send('Playing instant: ' + randomInstant.title);
 
+	await playSoundFromUrl(message, randomInstant.url);
+}
+
+async function playSoundFromUrl(message, url) {
 	voiceConnection = await joinChannel(message);
 	if (!voiceConnection) return;
-	voiceConnection.playArbitraryInput(randomInstant.url);
+	
+	const dispatcher = voiceConnection.playArbitraryInput(url);
+	dispatcher.on('end', end => {
+		leaveChannel();
+	});
 }
