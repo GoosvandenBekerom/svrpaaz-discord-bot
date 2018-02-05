@@ -2,8 +2,10 @@ const Discord = require('discord.js');
 const config = require('./config/bot.js');
 const tts = require('google-tts-api');
 const instants = require('./myinstants-api.js');
+const fs = require('fs');
 
 const bot = new Discord.Client();
+
 let voiceChannel = null;
 let voiceConnection = null;
 
@@ -26,6 +28,7 @@ bot.on('message', async message => {
 	
 	try {
 		switch(command) {
+			// Voice channel interaction
 			case 'join': {
 				voiceConnection = await joinChannel(message);
 				break;
@@ -34,6 +37,7 @@ bot.on('message', async message => {
 				leaveChannel();
 				break;
 			}
+			// Text to Speech
 			case 'say': {
 				await playTextToSpeech(message, args.join(' '));
 				break;
@@ -42,12 +46,25 @@ bot.on('message', async message => {
 				await playTextToSpeech(message, args.join(' '), 'en');
 				break;
 			}
+			case 'rus': {
+				await playTextToSpeech(message, args.join(' '), 'ru');
+				break;
+			}
+			case 'afr': {
+				await playTextToSpeech(message, args.join(' '), 'af');
+				break;
+			}
+			// Instants from myinstants.com
 			case 'ins': {
 				if (args.length > 0) {
 					await playInstant(message, args.join(' '));
 				} else {
 					await playInstant(message);
 				}
+				break;
+			}
+			case 'clue': {
+				sendRandomClue(message);
 				break;
 			}
 			default: break;
@@ -102,9 +119,18 @@ async function playInstant(message, query) {
 async function playSoundFromUrl(message, url) {
 	voiceConnection = await joinChannel(message);
 	if (!voiceConnection) return;
-
+	
 	const dispatcher = voiceConnection.playArbitraryInput(url);
 	dispatcher.on('end', end => {
 		leaveChannel();
+	});
+}
+
+function sendRandomClue(message) {
+	const dir = '../clue/';
+	const files = fs.readdirSync(dir);
+	const fileName = files[Math.floor(Math.random()*files.length)];
+	message.channel.send(fileName, {
+		file: dir+fileName
 	});
 }
