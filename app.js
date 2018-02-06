@@ -21,7 +21,7 @@ bot.on('message', async message => {
 		const command = commands.find((comm) => comm.command == commandText);
 		if (!command) return;
 
-		command.execute(message, args);
+		await command.execute(message, args);
 
 		message.delete().catch(console.error);
 	} catch (err) {
