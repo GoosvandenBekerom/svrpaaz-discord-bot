@@ -1,6 +1,7 @@
 const tts = require('google-tts-api');
 const fs = require('fs');
 const instants = require('./myinstants-api.js');
+const soundboard = require('./soundboard-api.js');
 const config = require('./config/bot.js');
 
 let voiceChannel = null;
@@ -24,16 +25,24 @@ module.exports = commands = [
         execute: async (message, args) =>  await playTextToSpeech(message, args.join(' '))
     },
     {
-        command: 'eng', options: "[text]", description: 'Speak out [text] in English',
+        command: 'en', options: "[text]", description: 'Speak out [text] in English',
         execute: async (message, args) => await playTextToSpeech(message, args.join(' '), 'en')
     },
     {
-        command: 'rus', options: "[text]", description: 'Speak out [text] in Russian',
+        command: 'ru', options: "[text]", description: 'Speak out [text] in Russian',
         execute: async (message, args) => await playTextToSpeech(message, args.join(' '), 'ru')
     },
     {
-        command: 'ger', options: "[text]", description: 'Speak out [text] in German',
+        command: 'de', options: "[text]", description: 'Speak out [text] in German',
         execute: async (message, args) => await playTextToSpeech(message, args.join(' '), 'de')
+    },
+    {
+        command: 'fr', options: "[text]", description: 'Speak out [text] in French',
+        execute: async (message, args) => await playTextToSpeech(message, args.join(' '), 'fr')
+    },
+    {
+        command: 'pl', options: "[text]", description: 'Speak out [text] in Polish',
+        execute: async (message, args) => await playTextToSpeech(message, args.join(' '), 'pl')
     },
     {
         command: 'ins', options: "[search]", description: 'Play a random instant sound from myinstants.com',
@@ -48,7 +57,11 @@ module.exports = commands = [
     {
         command: 'clue', options: "[novoice]", description: 'Show a random clue scroll and speak out its name in Dutch',
         execute: async (message, args) => await sendRandomClue(message, args)
-    }
+    }, 
+    /*{
+        command: 'anomaly', options: "", description: 'Play a random anomaly sound',
+        execute: async (message, args) => await sendRandomAnomaly(message, args)
+    }*/
 ];
 
 // Command functions
@@ -119,4 +132,19 @@ async function sendRandomClue(message, args) {
 	message.channel.send(fileName, {
 		file: dir+fileName
 	});
+}
+
+async function sendRandomAnomaly(message, args) {
+	const allSounds = await soundboard('Tifi');
+    
+    return console.log(allSounds);
+
+	if (allSounds.length <= 0) {
+		return message.channel.send('No matching soundboard found');
+	}
+
+	const sound = allSounds[Math.floor(Math.random()*allInstants.length)];
+	message.channel.send('Playing Anomaly: ' + sound.title);
+
+	await playSoundFromUrl(message, sound.url);
 }
