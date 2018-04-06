@@ -19,5 +19,16 @@ And then finally to install the bot
 - `$ npm install`
 
 ## Run the bot
+Finally you should configure your discord bot account to use this bot.  
+In the root folder create a folder called `config`, and in there create a file called `bot.js`.
+
+The contents should look somewhat like this:
+```js
+module.exports = {
+    token: 'your-bot-account-token',
+    prefix: ":"
+}
+```
+
 Run to following command to run the bot
 - `$ npm start`
