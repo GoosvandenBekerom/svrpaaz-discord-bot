@@ -6,6 +6,7 @@ const config = require('./config/bot.js');
 
 let voiceChannel = null;
 let voiceConnection = null;
+let fix = " bril.";
 
 module.exports = commands = [
     {
@@ -55,7 +56,7 @@ module.exports = commands = [
         }
     },
     {
-        command: 'clue', options: "[novoice]", description: 'Show a random clue scroll and speak out its name in Dutch',
+        command: 'clue', options: "[novoice]", description: 'Show a random clue scroll and speak out its name in a random language',
         execute: async (message, args) => await sendRandomClue(message, args)
     }, 
     /*{
@@ -93,7 +94,7 @@ async function playTextToSpeech(message, sayMessage, language = 'nl', displayMes
 		sayMessage = 'Vuile paaz denk je dat ik zo\'n lange tekst ga voorlezen...';
 	}
     
-	const url = await tts(sayMessage.replace('paaz', 'paas'), language, 1);
+	const url = await tts(sayMessage.replace('paaz', 'paas') + fix, language, 1);
 	
 	if (displayMessage) message.channel.send('['+language+'] '+originalMessage);
 	await playSoundFromUrl(message, url);
@@ -127,7 +128,10 @@ async function sendRandomClue(message, args) {
 	const files = fs.readdirSync(dir);
     const fileName = files[Math.floor(Math.random()*files.length)];
 
-    if (args[0] != 'novoice') await playTextToSpeech(message, fileName, 'nl', false);
+	const languages = ['nl', 'en', 'ru', 'de', 'fr', 'pl']; 
+	const language = languages[Math.floor(Math.random()*languages.length)];
+
+    if (args[0] != 'novoice') await playTextToSpeech(message, fileName, language, false);
 
 	message.channel.send(fileName, {
 		file: dir+fileName
