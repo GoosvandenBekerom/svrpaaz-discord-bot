@@ -6,7 +6,7 @@ const config = require('./config/bot.js');
 
 let voiceChannel = null;
 let voiceConnection = null;
-let fix = " bril.";
+let fix = " paas";
 
 module.exports = commands = [
     {
@@ -56,7 +56,7 @@ module.exports = commands = [
         }
     },
     {
-        command: 'clue', options: "[novoice]", description: 'Show a random clue scroll and speak out its name in a random language',
+        command: 'clue', options: "[languague(default=nl)]", description: 'Show a random clue scroll and speak out its name in the given language',
         execute: async (message, args) => await sendRandomClue(message, args)
     }, 
     /*{
@@ -129,9 +129,9 @@ async function sendRandomClue(message, args) {
     const fileName = files[Math.floor(Math.random()*files.length)];
 
 	const languages = ['nl', 'en', 'ru', 'de', 'fr', 'pl']; 
-	const language = languages[Math.floor(Math.random()*languages.length)];
+	const language = languages.indexOf(args[0]) > -1 ? args[0] : 'nl';
 
-    if (args[0] != 'novoice') await playTextToSpeech(message, fileName, language, false);
+    await playTextToSpeech(message, fileName, language, false);
 
 	message.channel.send(fileName, {
 		file: dir+fileName
